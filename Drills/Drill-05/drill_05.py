@@ -1,4 +1,5 @@
 from pico2d import *
+import math
 
 open_canvas()
 
@@ -48,17 +49,25 @@ def move_from_right_to_center():
         delay(0.02)
 
 def make_rectangle():
-    #move_from_center_to_right()
-    #move_up()
-    #move_left()
-    #move_down()
+    move_from_center_to_right()
+    move_up()
+    move_left()
+    move_down()
     move_from_right_to_center()
 
 def make_circle():
-    pass
+    cx, cy, r = 800 // 2, 600 // 2, 600 // 2 - 90
+    degree = -90
+    while degree < 270:
+        clear_canvas_now()
+        grass.draw_now(400, 30)
+        character.draw_now(cx + r * math.cos(math.radians(degree)),
+                           cy + r * math.sin(math.radians(degree)))
+        degree = degree + 5
+        delay(0.02)
 
 while True:
-    make_rectangle()
+    #make_rectangle()
     make_circle()
 
 close_canvas()
