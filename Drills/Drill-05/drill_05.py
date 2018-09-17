@@ -13,12 +13,15 @@ def point_to_point(start_x, start_y, target_x, target_y):
         clear_canvas()
         x += vx
         y += vy
-        character.clip_draw(0 * 100, 100, 100, 100, x, y)
+        if vx > 0:
+            character.clip_draw(0 * 100, 100, 100, 100, x, y)
+        else:
+            character.clip_draw(0 * 100, 0, 100, 100, x, y)
         update_canvas()
         delay(0.05)
 
 
-point_to_point(100,100,200,200)
+point_to_point(200,200,100,100)
 
 
 
