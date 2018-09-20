@@ -4,7 +4,7 @@ KPU_WIDTH, KPU_HEIGHT = 1280, 1024
 
 
 def handle_events():
-    global running
+    global running, move
     global x, y
     global cursor_x, cursor_y
     events = get_events()
@@ -16,20 +16,31 @@ def handle_events():
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             running = False
 
+def Move_To_Target():
+    pass
+def Stand_Still():
+    pass
+
 
 open_canvas(KPU_WIDTH, KPU_HEIGHT)
 kpu_ground = load_image('KPU_GROUND.png')
 character = load_image('animation_sheet.png')
 cursor = load_image('hand_arrow.png')
 
-
 running = True
+move = False
+
 x, y = KPU_WIDTH // 2, KPU_HEIGHT // 2
-cursor_x, cursor_y =  KPU_WIDTH // 2, KPU_HEIGHT // 2
+cursor_x, cursor_y = KPU_WIDTH // 2, KPU_HEIGHT // 2
 frame = 0
 hide_cursor()
 
 while running:
+
+    if move:
+        Move_To_Target()
+    else:
+        Stand_Still()
     clear_canvas()
     kpu_ground.draw(KPU_WIDTH // 2, KPU_HEIGHT // 2)
     cursor.draw(cursor_x + cursor.w / 2, cursor_y - cursor.h / 2)
