@@ -71,7 +71,7 @@ while running:
     cursor.draw(cursor_x + cursor.w / 2, cursor_y - cursor.h / 2)
     frame = (frame + 1) % 8
     update_canvas()
-    delay(0.02)
+    delay(0.06)
     handle_events()
 
 close_canvas()
