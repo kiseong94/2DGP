@@ -1,7 +1,7 @@
 from pico2d import *
 
 KPU_WIDTH, KPU_HEIGHT = 1280, 1024
-
+x, y = KPU_WIDTH // 2, KPU_HEIGHT // 2
 
 def handle_events():
     global running, move
@@ -19,8 +19,7 @@ def handle_events():
 def Move_To_Target():
     pass
 def Stand_Still():
-    pass
-
+    character.clip_draw(frame * 100, 100 * 2, 100, 100, x, y)
 
 open_canvas(KPU_WIDTH, KPU_HEIGHT)
 kpu_ground = load_image('KPU_GROUND.png')
@@ -30,20 +29,20 @@ cursor = load_image('hand_arrow.png')
 running = True
 move = False
 
-x, y = KPU_WIDTH // 2, KPU_HEIGHT // 2
+
 cursor_x, cursor_y = KPU_WIDTH // 2, KPU_HEIGHT // 2
 frame = 0
 hide_cursor()
 
 while running:
-
+    clear_canvas()
+    kpu_ground.draw(KPU_WIDTH // 2, KPU_HEIGHT // 2)
     if move:
         Move_To_Target()
     else:
         Stand_Still()
-    clear_canvas()
-    kpu_ground.draw(KPU_WIDTH // 2, KPU_HEIGHT // 2)
     cursor.draw(cursor_x + cursor.w / 2, cursor_y - cursor.h / 2)
+    frame = (frame + 1) % 8
     update_canvas()
     delay(0.02)
     handle_events()
