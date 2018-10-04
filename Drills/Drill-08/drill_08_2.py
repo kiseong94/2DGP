@@ -2,17 +2,18 @@ from pico2d import *
 import random
 
 
-points = [(100, 100),(300,350),(200,500),(100,200)]
-n=0
-size=4
-
-frame = 0
-prev_x = 0
-
 KPU_WIDTH, KPU_HEIGHT = 1280, 900
 open_canvas(KPU_WIDTH, KPU_HEIGHT)
 character = load_image('animation_sheet.png')
 kpu_ground = load_image('KPU_GROUND.png')
+
+n=0
+size=10
+
+points = [(random.randint(100, KPU_WIDTH-100), random.randint(100, KPU_HEIGHT-100)) for i in range(size)]
+
+frame = 0
+prev_x = 0
 
 
 def draw_curve_4_points(p1, p2, p3, p4):
@@ -37,8 +38,8 @@ def draw_curve_4_points(p1, p2, p3, p4):
 
 
 while True:
-    draw_curve_4_points(points[n-1],points[n],points[(n+1)%size],points[(n+2)%size])
-    n=(n+1)%size
+    draw_curve_4_points(points[n - 1], points[n], points[(n + 1) % size], points[(n + 2) % size])
+    n = (n + 1) % size
 
 
 turtle.done()
