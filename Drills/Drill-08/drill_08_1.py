@@ -2,6 +2,11 @@ import turtle
 import random
 
 
+points = [(-300, 200),(400,350),(300,-300),(-200,-200)]
+n=0
+size=4
+
+
 def stop():
     turtle.bye()
 
@@ -52,33 +57,9 @@ def draw_point(p):
 
 
 
-
-def draw_curve_3_points(p1, p2, p3):
-    draw_big_point(p1)
-    draw_big_point(p2)
-    draw_big_point(p3)
-
-    for i in range(0,100,2):
-        t = i/100
-        x = (2*t**2-3*t+1)*p1[0]+(-4*t**2+4*t)*p2[0]+(2*t**2-t)*p3[0]
-        y = (2*t**2-3*t+1)*p1[1]+(-4*t**2+4*t)*p2[1]+(2*t**2-t)*p3[1]
-        draw_point((x, y))
-    draw_point(p3)
-
-
 def draw_curve_4_points(p1, p2, p3, p4):
-    draw_big_point(p1)
-    draw_big_point(p2)
-    draw_big_point(p3)
-    draw_big_point(p4)
 
-    # draw p1-p2
-    for i in range(0, 50, 2):
-        t = i / 100
-        x = (2*t**2-3*t+1)*p1[0]+(-4*t**2+4*t)*p2[0]+(2*t**2-t)*p3[0]
-        y = (2*t**2-3*t+1)*p1[1]+(-4*t**2+4*t)*p2[1]+(2*t**2-t)*p3[1]
-        draw_point((x, y))
-    draw_point(p2)
+
 
     # draw p2-p3
     for i in range(0, 100, 2):
@@ -88,22 +69,20 @@ def draw_curve_4_points(p1, p2, p3, p4):
         draw_point((x, y))
     draw_point(p3)
 
-    # draw p3-p4
-    for i in range(50, 100, 2):
-        t = i / 100
-        x = (2*t**2-3*t+1)*p2[0]+(-4*t**2+4*t)*p3[0]+(2*t**2-t)*p4[0]
-        y = (2*t**2-3*t+1)*p2[1]+(-4*t**2+4*t)*p3[1]+(2*t**2-t)*p4[1]
-        draw_point((x, y))
-    draw_point(p4)
-
 
 
 
 
 prepare_turtle_canvas()
 
+draw_big_point(points[0])
+draw_big_point(points[1])
+draw_big_point(points[2])
+draw_big_point(points[3])
 
-draw_curve_4_points((-350,-100),(-50,200),(150,-100),(350,300))
+while True:
+    draw_curve_4_points(points[n-1],points[n],points[(n+1)%size],points[(n+2)%size])
+    n=(n+1)%size
 
 
 turtle.done()
