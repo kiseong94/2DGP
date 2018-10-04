@@ -33,7 +33,7 @@ def draw_curve_4_points(p1, p2, p3, p4):
         frame=(frame+1)%8
         prev_x=x
         update_canvas()
-        delay(0.02)
+        delay(0.03)
 
 
 
