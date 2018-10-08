@@ -36,8 +36,7 @@ class Boy:
     def draw(self):
         self.image.clip_draw(self.frame*100, 0, 100, 100, self.x, self.y)
 
-class Ball:
-    pass
+
 
 
 team = [Boy() for i in range(11)]
