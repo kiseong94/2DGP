@@ -43,17 +43,27 @@ class Ball:
     def __init__(self):
         self.x, self.y = random.randint(0, 800), 600
         self.vy = random.randint(-10, -5)
+        self.falling = True
 
         if random.randint(0, 1):
             self.image = load_image('ball21x21.png')
         else:
             self.image = load_image('ball41x41.png')
 
+        self.r = self.image.h // 2
+
     def update(self):
-        self.y += self.vy
+        if self.falling:
+            self.y += self.vy
 
     def draw(self):
         self.image.draw(self.x, self.y)
+
+    def collision(self):
+        if self.y <= 50+self.r:
+            self.y = 50+self.r
+            self.falling = False
+
 
 
 team = [Boy() for i in range(11)]
@@ -74,6 +84,7 @@ while running:
 
     for ball in balls:
         ball.update()
+        ball.collision()
         ball.draw()
 
     update_canvas()
