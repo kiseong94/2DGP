@@ -42,4 +42,3 @@ while True:
     n = (n + 1) % size
 
 
-turtle.done()
