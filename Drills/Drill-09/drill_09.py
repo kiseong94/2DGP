@@ -42,7 +42,7 @@ class Boy:
 class Ball:
     def __init__(self):
         self.x, self.y = random.randint(0, 800), 600
-        self.vy = random.randint(-10, -5)
+        self.vy = random.randint(-12, -6)
         self.falling = True
 
         if random.randint(0, 1):
