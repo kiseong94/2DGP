@@ -18,34 +18,63 @@ def handle_events():
             if event.key == SDLK_ESCAPE:
                 running = False
             elif event.key == SDLK_d:
-               main_character.key_manager(1)
+                main_character.key_manager(1)
+            elif event.key == SDLK_a:
+                main_character.key_manager(2)
+            elif event.key == SDLK_r:
+                main_character.key_manager(3)
+            elif event.key == SDLK_s:
+                main_character.key_manager(4)
+            elif event.key == SDLK_w:
+                main_character.key_manager(5)
         elif event.type == SDL_KEYUP:
             if event.key == SDLK_d:
                 main_character.key_manager(0)
+            elif event.key == SDLK_a:
+                main_character.key_manager(0)
+            elif event.key == SDLK_s:
+                main_character.key_manager(0)
+            elif event.key == SDLK_w:
+                main_character.key_manager(0)
+
 
 # initialization code
 class Main_Character:
     def __init__(self):
         self.image = load_image('main.png')
-        self.x = self.image.w//2
-        self.y = self.image.h//2 + 230
-        self.state = 0
+        self.x = 0
+        self.y = 60 + 230
+        self.state, self.prev_state = 0, 0
         self.frame = 0
+        self.reload_time = 6
 
     def move_right(self):
         self.x = self.x + 3
 
+    def move_left(self):
+        self.x = self.x - 2
 
     def draw(self):
-        if self.state == 0:
-            self.image.clip_draw(60 * (self.frame//2), 60 * self.state, 60, 60, self.x, self.y, 60, 60)
+        if self.state == 3:
+            self.image.clip_draw(60 * (self.frame // self.reload_time), 60 * self.state, 60, 60, self.x, self.y, 60, 60)
         else:
-            self.image.clip_draw(60*(self.frame%8), 60*self.state, 60, 60, self.x, self.y, 60, 60)
-        self.frame = (self.frame+1) % 16
+            self.image.clip_draw(60 * (self.frame // 2 % 8), 60 * self.state, 60, 60, self.x, self.y, 60, 60)
+
+        self.frame = (self.frame+1) % (8 * self.reload_time)
 
     def action(self):
+        if self.state != self.prev_state:
+            self.prev_state = self.state
+            self.frame = 0
+
         if self.state == 1:
             self.move_right()
+        elif self.state == 2:
+            self.move_left()
+        elif self.state == 3:
+            if self.frame == 8 * self.reload_time - 1:
+                self.state = 0
+                self.frame = 0
 
     def key_manager(self, state):
         self.state = state
@@ -79,9 +108,9 @@ while running:
     handle_events()
     clear_canvas()
     back_ground.draw()
-    main_character.draw()
     main_character.action()
+    main_character.draw()
     update_canvas()
-    delay(0.05)
+    delay(0.04)
 
 # finalization code
