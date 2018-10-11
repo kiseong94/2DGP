@@ -45,7 +45,7 @@ def draw():
 
 def update():
     global t
-    t = (t+0.05) % 2
+    t = (t+0.1) % 2
 
 
 def pause():
