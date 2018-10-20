@@ -7,7 +7,7 @@ from pico2d import *
 import game_framework
 import main_character
 import back_ground
-
+import snow
 
 name = "MainState"
 
@@ -15,6 +15,7 @@ player = None
 background = None
 font = None
 base_x = 0
+snows = []
 
 
 def enter():
@@ -54,11 +55,15 @@ def handle_events():
 
 def update():
     player.update()
+    for s in snows:
+        s.update()
 
 def draw():
     clear_canvas()
     background.draw()
     player.draw()
+    for s in snows:
+        s.draw()
     update_canvas()
 
 

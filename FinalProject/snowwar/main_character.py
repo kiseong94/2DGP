@@ -1,5 +1,6 @@
 from pico2d import *
 import main_state
+import snow
 import math
 
 IDLE, MOVE, AIM, THROW, HIT, DEAD, SIT, MAKE_WALL, RELOAD = range(9)
@@ -142,6 +143,7 @@ class Main_Character:
         self.frame = 0
         self.throw_power = 0
 
+
     def exit_AIM(self):
         pass
 
@@ -154,7 +156,6 @@ class Main_Character:
         self.throw_degree = math.atan((self.aim_draw_x - self.aim_base_x)/(self.aim_base_y - self.aim_draw_y))
 
     def draw_AIM(self):
-
         self.throw_image.clip_composite_draw(40 * 1, 0, 40, 45, clamp(-1.2, self.throw_degree, 0), 'n', 200, self.y + 10, 40, 45)
         self.image.clip_draw(60 * 0, 60 * 6, 60, 60, 200, self.y, 60, 60)
         self.throw_image.clip_composite_draw(40 * 0, 0, 40, 45, clamp(-2, self.throw_degree, -0.2), 'n', 200 - 5, self.y + 10, 40, 45)
@@ -168,7 +169,7 @@ class Main_Character:
         self.timer = 8
 
     def exit_THROW(self):
-        pass
+        main_state.snows.insert(0, snow.Snow(200, self.y, (self.aim_base_x-self.aim_draw_x)/10, (self.aim_base_y-self.aim_draw_y)/10))
 
     def do_THROW(self):
         self.timer -= 1
