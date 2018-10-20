@@ -5,26 +5,30 @@ import os
 from pico2d import *
 
 import game_framework
-
 import main_character
-
+import back_ground
 
 
 name = "MainState"
 
 player = None
+background = None
 font = None
-
+base_x = 0
 
 
 def enter():
     global player
+    global background
     player = main_character.Main_Character()
+    background = back_ground.Back_Ground()
 
 
 def exit():
     global player
+    global background
     del player
+    del background
 
 
 
@@ -53,6 +57,7 @@ def update():
 
 def draw():
     clear_canvas()
+    background.draw()
     player.draw()
     update_canvas()
 

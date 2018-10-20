@@ -1,4 +1,6 @@
 from pico2d import *
+import main_state
+import back_ground
 
 IDLE, MOVE, ATTACK, HIT, DEAD, SIT, MAKE_WALL, RELOAD = range(8)
 
@@ -34,7 +36,7 @@ class Main_Character:
     def __init__(self):
         self.event_que = []
         self.image = load_image('main.png')
-        self.x, self.y = 0, 60 + 230
+        self.x, self.y = 200, 30 + 260
         self.cur_state = IDLE
         self.frame = 0
         self.velocity = 0
@@ -48,10 +50,10 @@ class Main_Character:
         pass
 
     def do_IDLE(self):
-        self.frame = (self.frame + 1) % 8
+        self.frame = (self.frame + 1) % 16
 
     def draw_IDLE(self):
-        self.image.clip_draw(60 * self.frame, 60 * 0, 60, 60, self.x, self.y, 60, 60)
+        self.image.clip_draw(60 * (self.frame//2), 60 * 0, 60, 60, 200, self.y, 60, 60)
 
 
 
@@ -64,12 +66,16 @@ class Main_Character:
     def do_MOVE(self):
         self.frame = (self.frame + 1) % 8
         self.x += self.velocity
+        main_state.background.move_ground(self.velocity)
+        main_state.background.move_forest(self.velocity)
+        main_state.background.move_mountain(self.velocity)
+
 
     def draw_MOVE(self):
         if self.velocity > 0:
-            self.image.clip_draw(60 * self.frame, 60 * 1, 60, 60, self.x, self.y, 60, 60)
+            self.image.clip_draw(60 * self.frame, 60 * 1, 60, 60, 200, self.y, 60, 60)
         else:
-            self.image.clip_draw(60 * self.frame, 60 * 2, 60, 60, self.x, self.y, 60, 60)
+            self.image.clip_draw(60 * self.frame, 60 * 2, 60, 60, 200, self.y, 60, 60)
 
 
 
@@ -80,10 +86,10 @@ class Main_Character:
         pass
 
     def do_RELOAD(self):
-        self.frame = (self.frame + 1) % 8
+        self.frame = (self.frame + 1) % 16
 
     def draw_RELOAD(self):
-        self.image.clip_draw(60 * self.frame, 60 * 3, 60, 60, self.x, self.y, 60, 60)
+        self.image.clip_draw(60 * (self.frame//2), 60 * 3, 60, 60, 200, self.y, 60, 60)
 
 
 
@@ -94,10 +100,10 @@ class Main_Character:
         pass
 
     def do_SIT(self):
-        self.frame = (self.frame + 1) % 8
+        self.frame = (self.frame + 1) % 16
 
     def draw_SIT(self):
-        self.image.clip_draw(60 * self.frame, 60 * 4, 60, 60, self.x, self.y, 60, 60)
+        self.image.clip_draw(60 * (self.frame//2), 60 * 4, 60, 60, 200, self.y, 60, 60)
 
 
     def enter_MAKE_WALL(self):
@@ -107,10 +113,10 @@ class Main_Character:
         pass
 
     def do_MAKE_WALL(self):
-        self.frame = (self.frame + 1) % 8
+        self.frame = (self.frame + 1) % 16
 
     def draw_MAKE_WALL(self):
-        self.image.clip_draw(60 * self.frame, 60 * 5, 60, 60, self.x, self.y, 60, 60)
+        self.image.clip_draw(60 * (self.frame//2), 60 * 5, 60, 60, 200, self.y, 60, 60)
 
 
     def enter_ATTACK(self):
