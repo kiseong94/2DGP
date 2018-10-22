@@ -56,7 +56,9 @@ def handle_events():
 def update():
     player.update()
     for s in snows:
-        s.update()
+        if s.update():
+            snows.remove(s)
+
 
 def draw():
     clear_canvas()

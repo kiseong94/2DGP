@@ -85,6 +85,7 @@ class Main_Character:
     def do_MOVE(self):
         self.frame = (self.frame + 1) % 8
         self.x += self.velocity
+        main_state.base_x += self.velocity
         main_state.background.move_ground(self.velocity)
         main_state.background.move_forest(self.velocity)
         main_state.background.move_mountain(self.velocity)
