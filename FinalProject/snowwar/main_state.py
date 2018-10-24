@@ -7,7 +7,7 @@ from pico2d import *
 import game_framework
 import main_character
 import back_ground
-import snow
+import enemy
 
 name = "MainState"
 
@@ -15,7 +15,9 @@ player = None
 background = None
 font = None
 base_x = 0
+cnt = 100
 snows = []
+enemies = []
 
 
 def enter():
@@ -54,10 +56,20 @@ def handle_events():
 
 
 def update():
+    global cnt
+    if cnt == 0:
+        enemies.insert(0, enemy.Enemy_basic())
+        cnt = 100
+    else:
+        cnt -= 1
+
     player.update()
     for s in snows:
-        if s.update():
+        s.update()
+        if s.check_destroyed():
             snows.remove(s)
+    for e in enemies:
+        e.update()
 
 
 def draw():
@@ -66,6 +78,9 @@ def draw():
     player.draw()
     for s in snows:
         s.draw()
+
+    for e in enemies:
+        e.draw()
     update_canvas()
 
 

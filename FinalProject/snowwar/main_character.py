@@ -53,12 +53,13 @@ class Main_Character:
         self.cur_state = IDLE
         self.frame = 0
         self.velocity = 0
-        self.reload_time = 6
+        self.reload_time = 60
         self.throw_power = 0
         self.aim_base_x, self.aim_base_y = 0, 0
         self.aim_draw_x, self.aim_draw_y = 0, 0
         self.timer = 0
         self.throw_degree = 0
+        self.snow_stack = 0
 
 
 
@@ -101,12 +102,18 @@ class Main_Character:
 
     def enter_RELOAD(self):
         self.frame = 0
+        self.timer = 0
 
     def exit_RELOAD(self):
         pass
 
     def do_RELOAD(self):
         self.frame = (self.frame + 1) % 16
+        if self.timer == self.reload_time:
+            self.snow_stack += 1
+            self.add_event(TIME_UP)
+        else:
+            self.timer += 1
 
     def draw_RELOAD(self):
         self.image.clip_draw(60 * (self.frame//2), 60 * 3, 60, 60, 200, self.y, 60, 60)
@@ -170,7 +177,8 @@ class Main_Character:
         self.timer = 8
 
     def exit_THROW(self):
-        main_state.snows.insert(0, snow.Snow(200, self.y, (self.aim_base_x-self.aim_draw_x)/10, (self.aim_base_y-self.aim_draw_y)/10))
+        self.snow_stack = 0
+        main_state.snows.insert(0, snow.Snow(200, self.y + 10, (self.aim_base_x-self.aim_draw_x)/15 + 5, (self.aim_base_y-self.aim_draw_y)/15))
 
     def do_THROW(self):
         self.timer -= 1
@@ -238,8 +246,12 @@ class Main_Character:
         elif (event.type, event.button) in mouse_event_table:
             key_event = mouse_event_table[(event.type, event.button)]
             if key_event == LEFT_BUTTON_DOWN:
-                self.aim_base_x, self.aim_base_y = event.x, 900 - event.y -1
+                if self.snow_stack == 0:
+                    key_event = R_DOWN
+                else:
+                    self.aim_base_x, self.aim_base_y = event.x, 900 - event.y -1
             self.add_event(key_event)
+
         elif event.type == SDL_MOUSEMOTION and self.cur_state == AIM:
             self.aim_draw_x, self.aim_draw_y = event.x, 900 - event.y -1
 
