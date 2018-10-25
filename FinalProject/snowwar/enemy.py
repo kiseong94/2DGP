@@ -90,21 +90,28 @@ class Enemy:
 
 
     def enter_AIM(self):
-        pass
+        self.timer = 0
+        self.frame = 0
 
 
     def exit_AIM(self):
         pass
 
     def do_AIM(self):
-        pass
+        if self.frame < 16:
+            self.frame += self.frame
+        if self.timer == 40:
+            self.snow_stack += 1
+            self.change_state(THROW)
+        else:
+            self.timer += 1
 
     def draw_AIM(self):
-        pass
+        self.image.clip_draw(60 * (self.frame // 2), 60 * 3, 60, 60, self.x - main_state.base_x, self.y, 60, 60)
 
 
     def enter_THROW(self):
-        pass
+        self.frame = 0
 
     def exit_THROW(self):
         pass
