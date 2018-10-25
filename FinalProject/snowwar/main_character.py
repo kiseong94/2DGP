@@ -171,7 +171,6 @@ class Main_Character:
         self.arrow_image.rotate_draw(self.throw_degree, 200, 350, 10+self.throw_power/12, 30 + self.throw_power/2)
 
 
-
     def enter_THROW(self):
         self.frame = 0
         self.timer = 8
