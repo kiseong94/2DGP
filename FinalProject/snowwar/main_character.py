@@ -177,7 +177,7 @@ class Main_Character:
 
     def exit_THROW(self):
         self.snow_stack = 0
-        main_state.snows.insert(0, snow.Snow(200, self.y + 10, (self.aim_base_x-self.aim_draw_x)/15 + 5, (self.aim_base_y-self.aim_draw_y)/15))
+        main_state.snows.insert(0, snow.Snow(200 + main_state.base_x, self.y + 10, (self.aim_base_x-self.aim_draw_x)/15 + 5, (self.aim_base_y-self.aim_draw_y)/15))
 
     def do_THROW(self):
         self.timer -= 1

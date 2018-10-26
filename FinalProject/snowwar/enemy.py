@@ -43,6 +43,7 @@ class Enemy:
 
     def enter_RELOAD(self):
         self.frame = 0
+        self.timer = 0
 
     def exit_RELOAD(self):
         pass
@@ -113,15 +114,21 @@ class Enemy:
     def enter_THROW(self):
         self.frame = 0
 
+
     def exit_THROW(self):
-        pass
+        self.snow_stack = 0
+        self.throw_snow()
+        self.target_distance -= random.randint(0, 50)
 
 
     def do_THROW(self):
-        pass
+        if self.frame == 8:
+            self.change_state(IDLE)
+        else:
+            self.frame += 1
 
     def draw_THROW(self):
-        pass
+        self.image.clip_draw(60 * (self.frame // 2), 60 * 4, 60, 60, self.x - main_state.base_x, self.y, 60, 60)
 
 
     def enter_HIT(self):
@@ -150,10 +157,10 @@ class Enemy:
     def draw_DEAD(self):
         self.image.clip_draw(60 * (self.frame//2), 60 * 1, 60, 60, self.x - main_state.base_x, self.y, 60, 60)
 
-    enter_state = {MOVE: enter_MOVE, DEAD: enter_DEAD, RELOAD: enter_RELOAD, AIM: enter_AIM, THROW: enter_THROW}
-    exit_state = {MOVE: exit_MOVE, DEAD: exit_DEAD, RELOAD: exit_RELOAD, AIM: exit_AIM, THROW: exit_THROW}
-    do_state = {MOVE: do_MOVE, DEAD: do_DEAD, RELOAD: do_RELOAD, AIM: do_AIM, THROW: do_THROW}
-    draw_state = {MOVE: draw_MOVE, DEAD: draw_DEAD, RELOAD: draw_RELOAD, AIM: draw_AIM, THROW: draw_THROW}
+    enter_state = {IDLE: enter_IDLE, MOVE: enter_MOVE, DEAD: enter_DEAD, RELOAD: enter_RELOAD, AIM: enter_AIM, THROW: enter_THROW}
+    exit_state = {IDLE: exit_IDLE, MOVE: exit_MOVE, DEAD: exit_DEAD, RELOAD: exit_RELOAD, AIM: exit_AIM, THROW: exit_THROW}
+    do_state = {IDLE: do_IDLE, MOVE: do_MOVE, DEAD: do_DEAD, RELOAD: do_RELOAD, AIM: do_AIM, THROW: do_THROW}
+    draw_state = {IDLE: draw_IDLE, MOVE: draw_MOVE, DEAD: draw_DEAD, RELOAD: draw_RELOAD, AIM: draw_AIM, THROW: draw_THROW}
 
 
     def add_event(self, event):
@@ -171,13 +178,23 @@ class Enemy:
         if self.cur_state == IDLE or self.cur_state != DEAD:
             self.select_state()
 
-        for s in main_state.snows:
-            if s.collision_object(self.x - 10, self.y + 25, self.x + 10, self.y - 25):
-                self.change_state(DEAD)
+        if self.cur_state != DEAD:
+            for s in main_state.snows:
+                if s.collision_object(self.x - 10, self.y + 25, self.x + 10, self.y - 25):
+                    self.change_state(DEAD)
 
     def draw(self):
         self.draw_state[self.cur_state](self)
         #draw_rectangle(self.x - 10 - main_state.base_x, self.y + 25, self.x + 10 - main_state.base_x, self.y - 25)
+
+    def throw_snow(self):
+        distance = self.x - main_state.base_x - 200 + random.randint(-150, 100)
+        vx = 15
+        t = distance/vx
+        #vy = (28*math.sqrt(t**2 + 100) + 40*t)/50
+        vy = t/5-(40/t)
+        main_state.snows.insert(0, snow.Snow(self.x, self.y + 10, -vx, vy))
+
 
 
 
@@ -192,7 +209,7 @@ class Enemy_basic(Enemy):
         self.event_que = []
         self.x, self.y = 1800 + main_state.base_x, 30 + 260
         self.frame = 0
-        self.reload_time = 60
+        self.reload_time = 80
         self.throw_power = 0
         self.timer = 0
         self.throw_degree = 0

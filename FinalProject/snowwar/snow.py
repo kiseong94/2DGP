@@ -8,7 +8,7 @@ class Snow:
     def __init__(self, x, y, vx, vy):
         self.image = load_image('snow.png')
         self.destroy_image = load_image('snow_destroy.png')
-        self.x, self.y = x + main_state.base_x, y
+        self.x, self.y = x, y
         self.prev_x, self.prev_y = x + main_state.base_x, y
         self.vx, self.vy = vx, vy
         self.cur_state = FLY
