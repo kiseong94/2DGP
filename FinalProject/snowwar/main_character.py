@@ -1,9 +1,8 @@
 from pico2d import *
 import main_state
 import snow
+import snow_wall
 import math
-
-IDLE, MOVE, AIM, THROW, HIT, DEAD, SIT, MAKE_WALL, RELOAD = range(9)
 
 A_DOWN, A_UP, S_DOWN, S_UP, W_DOWN, W_UP, D_DOWN, D_UP, R_DOWN, LEFT_BUTTON_DOWN, LEFT_BUTTON_UP, TIME_UP = range(12)
 
@@ -21,36 +20,232 @@ mouse_event_table = {
 }
 
 
+class IdleState:
+
+    @staticmethod
+    def enter(character):
+        character.frame = 0
+
+    @staticmethod
+    def exit(character):
+        pass
+
+    @staticmethod
+    def do(character):
+        character.frame = (character.frame + 1) % 16
+
+    @staticmethod
+    def draw(character):
+        character.image.clip_draw(60 * (character.frame // 2), 60 * 0, 60, 60, 200, character.y, 60, 60)
+
+
+class MoveState:
+
+    @staticmethod
+    def enter(character):
+        character.frame = 0
+
+    @staticmethod
+    def exit(character):
+        pass
+
+    @staticmethod
+    def do(character):
+        character.frame = (character.frame + 1) % 8
+        main_state.base_x += character.velocity
+        main_state.background.move_ground(character.velocity)
+        main_state.background.move_forest(character.velocity)
+        main_state.background.move_mountain(character.velocity)
+
+    @staticmethod
+    def draw(character):
+        if character.velocity > 0:
+            character.image.clip_draw(60 * character.frame, 60 * 1, 60, 60, 200, character.y, 60, 60)
+        else:
+            character.image.clip_draw(60 * character.frame, 60 * 2, 60, 60, 200, character.y, 60, 60)
+
+
+class ReloadState:
+
+    @staticmethod
+    def enter(character):
+        character.frame = 0
+        character.timer = 0
+
+    @staticmethod
+    def exit(character):
+        pass
+
+    @staticmethod
+    def do(character):
+        character.frame = (character.frame + 1) % 16
+        if character.timer == character.reload_time:
+            character.snow_stack += 1
+            character.add_event(TIME_UP)
+        else:
+            character.timer += 1
+
+    @staticmethod
+    def draw(character):
+        character.image.clip_draw(60 * (character.frame // 2), 60 * 3, 60, 60, 200, character.y, 60, 60)
+
+
+class SitState:
+
+    @staticmethod
+    def enter(character):
+        character.frame = 0
+
+    @staticmethod
+    def exit(character):
+        pass
+
+    @staticmethod
+    def do(character):
+        character.frame = (character.frame + 1) % 16
+
+    @staticmethod
+    def draw(character):
+        character.image.clip_draw(60 * (character.frame // 2), 60 * 4, 60, 60, 200, character.y, 60, 60)
+
+
+class MakeWallState:
+
+    @staticmethod
+    def enter(character):
+        character.frame = 0
+
+    @staticmethod
+    def exit(character):
+        pass
+
+    @staticmethod
+    def do(character):
+
+        if character.frame == 15:
+            find_wall = False
+
+            for sw in main_state.snow_walls:
+                if sw.check_existence(character.x + main_state.base_x, character.x + main_state.base_x + 60):
+                    sw.strengthen_wall()
+                    find_wall = True
+
+            if find_wall == False:
+                main_state.snow_walls.insert(0, snow_wall.SnowWall(character.x + main_state.base_x + 20))
+
+            character.frame = 0
+        else:
+            character.frame += 1
+
+    @staticmethod
+    def draw(character):
+        character.image.clip_draw(60 * (character.frame // 2), 60 * 5, 60, 60, 200, character.y, 60, 60)
+
+
+class AimState:
+
+    @staticmethod
+    def enter(character):
+        character.aim_draw_x, character.aim_draw_y = character.aim_base_x, character.aim_base_y
+        character.frame = 0
+        character.throw_power = 0
+
+    @staticmethod
+    def exit(character):
+        pass
+
+    @staticmethod
+    def do(character):
+        if character.aim_base_y <= character.aim_draw_y:
+            character.aim_draw_y = character.aim_base_y - 1
+        if character.aim_base_x <= character.aim_draw_x:
+            character.aim_draw_x = character.aim_base_x - 1
+        character.throw_power = math.sqrt((character.aim_draw_x - character.aim_base_x)**2+(character.aim_base_y - character.aim_draw_y)**2)
+        character.throw_degree = math.atan((character.aim_draw_x - character.aim_base_x)/(character.aim_base_y - character.aim_draw_y))
+
+    @staticmethod
+    def draw(character):
+        character.throw_image.clip_composite_draw(40 * 1, 0, 40, 45, clamp(-1.2, character.throw_degree, 0), 'n', 200, character.y + 10, 40, 45)
+        character.image.clip_draw(60 * 0, 60 * 6, 60, 60, 200, character.y, 60, 60)
+        character.throw_image.clip_composite_draw(40 * 0, 0, 40, 45, clamp(-2, character.throw_degree, -0.2), 'n', 200 - 5, character.y + 10, 40, 45)
+        character.throw_image.clip_composite_draw(40 * 2, 0, 40, 45, clamp(-2, character.throw_degree, -0.6) - 30, 'n', 200 - 1, character.y + 15, 40, 45)
+        character.arrow_image.rotate_draw(character.throw_degree, 200, 350, 10 + character.throw_power / 12, 30 + character.throw_power / 2)
+
+
+class ThrowState:
+
+    @staticmethod
+    def enter(character):
+        character.frame = 0
+        character.timer = 8
+
+    @staticmethod
+    def exit(character):
+        character.snow_stack = 0
+        main_state.snows.insert(0, snow.Snow(200 + main_state.base_x, character.y + 15,
+                                             (character.aim_base_x - character.aim_draw_x) / 15 + 5,
+                                             (character.aim_base_y - character.aim_draw_y) / 15))
+
+    @staticmethod
+    def do(character):
+        character.timer -= 1
+        character.frame += 1
+        if character.timer <= 0:
+            character.add_event(TIME_UP)
+
+    @staticmethod
+    def draw(character):
+        character.image.clip_draw(60 * (character.frame // 2), 60 * 7, 60, 60, 200, character.y, 60, 60)
+
+
+class HitState:
+
+    @staticmethod
+    def enter(character):
+        pass
+
+    @staticmethod
+    def exit(character):
+        pass
+
+    @staticmethod
+    def do(character):
+        pass
+
+    @staticmethod
+    def draw(character):
+        pass
+
 
 next_state_table = {
-    IDLE: {A_DOWN: MOVE, D_DOWN: MOVE, A_UP: IDLE, D_UP: IDLE, S_DOWN: SIT, S_UP: IDLE, W_DOWN: MAKE_WALL,
-           W_UP: IDLE, R_DOWN: RELOAD, LEFT_BUTTON_DOWN: AIM, LEFT_BUTTON_UP: IDLE, TIME_UP: IDLE},
-    MOVE: {A_DOWN: MOVE, D_DOWN: MOVE, A_UP: IDLE, D_UP: IDLE, S_DOWN: SIT, S_UP: MOVE, W_DOWN: MAKE_WALL,
-           W_UP: MOVE, R_DOWN: RELOAD, LEFT_BUTTON_DOWN: AIM, LEFT_BUTTON_UP: MOVE, TIME_UP: IDLE},
-    RELOAD: {A_DOWN: MOVE, D_DOWN: MOVE, A_UP: RELOAD, D_UP: RELOAD, S_DOWN: SIT, S_UP: RELOAD, W_DOWN: MAKE_WALL,
-             W_UP: RELOAD, R_DOWN: RELOAD, LEFT_BUTTON_DOWN: AIM, LEFT_BUTTON_UP: RELOAD, TIME_UP: IDLE},
-    SIT: {A_DOWN: MOVE, D_DOWN: MOVE, A_UP: SIT, D_UP: SIT, S_DOWN: SIT, S_UP: IDLE, W_DOWN: MAKE_WALL,
-          W_UP: SIT, R_DOWN: RELOAD, LEFT_BUTTON_DOWN: AIM, LEFT_BUTTON_UP: SIT, TIME_UP: IDLE},
-    MAKE_WALL: {A_DOWN: MOVE, D_DOWN: MOVE, A_UP: MAKE_WALL, D_UP: MAKE_WALL, S_DOWN: SIT, S_UP: MAKE_WALL,
-                W_DOWN: MAKE_WALL, W_UP: IDLE, R_DOWN: RELOAD, LEFT_BUTTON_DOWN: AIM, LEFT_BUTTON_UP: MAKE_WALL, },
-    AIM: {A_DOWN: AIM, D_DOWN: AIM, A_UP: AIM, D_UP: AIM, S_DOWN: AIM, S_UP: AIM, TIME_UP: IDLE,
-          W_DOWN: AIM, W_UP: AIM, R_DOWN: AIM, LEFT_BUTTON_DOWN: AIM, LEFT_BUTTON_UP: THROW, TIME_UP: IDLE},
-    THROW: {A_DOWN: THROW, D_DOWN: THROW, A_UP: THROW, D_UP: THROW, S_DOWN: THROW, S_UP: THROW,
-            W_DOWN: THROW, W_UP: THROW, R_DOWN: THROW, LEFT_BUTTON_DOWN: THROW, LEFT_BUTTON_UP: THROW, TIME_UP: IDLE},
-    HIT: {},
+    IdleState: {A_DOWN: MoveState, D_DOWN: MoveState, A_UP: IdleState, D_UP: IdleState, S_DOWN: SitState, S_UP: IdleState, W_DOWN: MakeWallState,
+                W_UP: IdleState, R_DOWN: ReloadState, LEFT_BUTTON_DOWN: AimState, LEFT_BUTTON_UP: IdleState, TIME_UP: IdleState},
+    MoveState: {A_DOWN: MoveState, D_DOWN: MoveState, A_UP: IdleState, D_UP: IdleState, S_DOWN: SitState, S_UP: MoveState, W_DOWN: MakeWallState,
+           W_UP: MoveState, R_DOWN: ReloadState, LEFT_BUTTON_DOWN: AimState, LEFT_BUTTON_UP: MoveState, TIME_UP: IdleState},
+    ReloadState: {A_DOWN: MoveState, D_DOWN: MoveState, A_UP: ReloadState, D_UP: ReloadState, S_DOWN: SitState, S_UP: ReloadState, W_DOWN: MakeWallState,
+             W_UP: ReloadState, R_DOWN: ReloadState, LEFT_BUTTON_DOWN: AimState, LEFT_BUTTON_UP: ReloadState, TIME_UP: IdleState},
+    SitState: {A_DOWN: MoveState, D_DOWN: MoveState, A_UP: SitState, D_UP: SitState, S_DOWN: SitState, S_UP: IdleState, W_DOWN: MakeWallState,
+          W_UP: SitState, R_DOWN: ReloadState, LEFT_BUTTON_DOWN: AimState, LEFT_BUTTON_UP: SitState, TIME_UP: IdleState},
+    MakeWallState: {A_DOWN: MoveState, D_DOWN: MoveState, A_UP: MakeWallState, D_UP: MakeWallState, S_DOWN: SitState, S_UP: MakeWallState,
+                W_DOWN: MakeWallState, W_UP: IdleState, R_DOWN: ReloadState, LEFT_BUTTON_DOWN: AimState, LEFT_BUTTON_UP: MakeWallState, },
+    AimState: {A_DOWN: AimState, D_DOWN: AimState, A_UP: AimState, D_UP: AimState, S_DOWN: AimState, S_UP: AimState, TIME_UP: IdleState,
+          W_DOWN: AimState, W_UP: AimState, R_DOWN: AimState, LEFT_BUTTON_DOWN: AimState, LEFT_BUTTON_UP: ThrowState, TIME_UP: IdleState},
+    ThrowState: {A_DOWN: ThrowState, D_DOWN: ThrowState, A_UP: ThrowState, D_UP: ThrowState, S_DOWN: ThrowState, S_UP: ThrowState,
+            W_DOWN: ThrowState, W_UP: ThrowState, R_DOWN: ThrowState, LEFT_BUTTON_DOWN: ThrowState, LEFT_BUTTON_UP: ThrowState, TIME_UP: IdleState},
+    HitState: {},
 
 }
 
 
-# initialization code
-class Main_Character:
+class Character:
+
     def __init__(self):
         self.event_que = []
         self.image = load_image('main.png')
         self.arrow_image = load_image('arrow.png')
         self.throw_image = load_image('throw_parts.png')
         self.x, self.y = 200, 30 + 260
-        self.cur_state = IDLE
+        self.cur_state = IdleState
         self.frame = 0
         self.velocity = 0
         self.reload_time = 60
@@ -62,173 +257,24 @@ class Main_Character:
         self.snow_stack = 0
 
 
-
-    def enter_IDLE(self):
-        self.frame = 0
-
-    def exit_IDLE(self):
-        pass
-
-    def do_IDLE(self):
-        self.frame = (self.frame + 1) % 16
-
-    def draw_IDLE(self):
-        self.image.clip_draw(60 * (self.frame//2), 60 * 0, 60, 60, 200, self.y, 60, 60)
-
-
-
-    def enter_MOVE(self):
-        self.frame = 0
-
-    def exit_MOVE(self):
-        pass
-
-    def do_MOVE(self):
-        self.frame = (self.frame + 1) % 8
-        self.x += self.velocity
-        main_state.base_x += self.velocity
-        main_state.background.move_ground(self.velocity)
-        main_state.background.move_forest(self.velocity)
-        main_state.background.move_mountain(self.velocity)
-
-
-    def draw_MOVE(self):
-        if self.velocity > 0:
-            self.image.clip_draw(60 * self.frame, 60 * 1, 60, 60, 200, self.y, 60, 60)
-        else:
-            self.image.clip_draw(60 * self.frame, 60 * 2, 60, 60, 200, self.y, 60, 60)
-
-
-
-    def enter_RELOAD(self):
-        self.frame = 0
-        self.timer = 0
-
-    def exit_RELOAD(self):
-        pass
-
-    def do_RELOAD(self):
-        self.frame = (self.frame + 1) % 16
-        if self.timer == self.reload_time:
-            self.snow_stack += 1
-            self.add_event(TIME_UP)
-        else:
-            self.timer += 1
-
-    def draw_RELOAD(self):
-        self.image.clip_draw(60 * (self.frame//2), 60 * 3, 60, 60, 200, self.y, 60, 60)
-
-
-
-    def enter_SIT(self):
-        self.frame = 0
-
-    def exit_SIT(self):
-        pass
-
-    def do_SIT(self):
-        self.frame = (self.frame + 1) % 16
-
-    def draw_SIT(self):
-        self.image.clip_draw(60 * (self.frame//2), 60 * 4, 60, 60, 200, self.y, 60, 60)
-
-
-    def enter_MAKE_WALL(self):
-        self.frame = 0
-
-    def exit_MAKE_WALL(self):
-        pass
-
-    def do_MAKE_WALL(self):
-        self.frame = (self.frame + 1) % 16
-
-    def draw_MAKE_WALL(self):
-        self.image.clip_draw(60 * (self.frame//2), 60 * 5, 60, 60, 200, self.y, 60, 60)
-
-
-    def enter_AIM(self):
-        self.aim_draw_x, self.aim_draw_y = self.aim_base_x, self.aim_base_y
-        self.frame = 0
-        self.throw_power = 0
-
-
-    def exit_AIM(self):
-        pass
-
-    def do_AIM(self):
-        if self.aim_base_y <= self.aim_draw_y:
-            self.aim_draw_y = self.aim_base_y - 1
-        if self.aim_base_x <= self.aim_draw_x:
-            self.aim_draw_x = self.aim_base_x - 1
-        self.throw_power = math.sqrt((self.aim_draw_x - self.aim_base_x)**2+(self.aim_base_y - self.aim_draw_y)**2)
-        self.throw_degree = math.atan((self.aim_draw_x - self.aim_base_x)/(self.aim_base_y - self.aim_draw_y))
-
-    def draw_AIM(self):
-        self.throw_image.clip_composite_draw(40 * 1, 0, 40, 45, clamp(-1.2, self.throw_degree, 0), 'n', 200, self.y + 10, 40, 45)
-        self.image.clip_draw(60 * 0, 60 * 6, 60, 60, 200, self.y, 60, 60)
-        self.throw_image.clip_composite_draw(40 * 0, 0, 40, 45, clamp(-2, self.throw_degree, -0.2), 'n', 200 - 5, self.y + 10, 40, 45)
-        self.throw_image.clip_composite_draw(40 * 2, 0, 40, 45, clamp(-2, self.throw_degree, -0.6) - 30, 'n', 200 - 1, self.y + 15, 40, 45)
-        self.arrow_image.rotate_draw(self.throw_degree, 200, 350, 10+self.throw_power/12, 30 + self.throw_power/2)
-
-
-    def enter_THROW(self):
-        self.frame = 0
-        self.timer = 8
-
-    def exit_THROW(self):
-        self.snow_stack = 0
-        main_state.snows.insert(0, snow.Snow(200 + main_state.base_x, self.y + 10, (self.aim_base_x-self.aim_draw_x)/15 + 5, (self.aim_base_y-self.aim_draw_y)/15))
-
-    def do_THROW(self):
-        self.timer -= 1
-        self.frame += 1
-        if self.timer <= 0:
-            self.add_event(TIME_UP)
-
-    def draw_THROW(self):
-        self.image.clip_draw(60 * (self.frame//2), 60 * 7, 60, 60, 200, self.y, 60, 60)
-
-
-    def enter_HIT(self):
-        pass
-
-    def exit_HIT(self):
-        pass
-
-    def do_HIT(self):
-        pass
-
-    def draw_HIT(self):
-        pass
-
-    enter_state = {IDLE: enter_IDLE, MOVE: enter_MOVE, RELOAD: enter_RELOAD, SIT: enter_SIT,
-                   MAKE_WALL: enter_MAKE_WALL, AIM: enter_AIM, THROW: enter_THROW}
-    exit_state = {IDLE: exit_IDLE, MOVE: exit_MOVE, RELOAD: exit_RELOAD, SIT: exit_SIT,
-                  MAKE_WALL: exit_MAKE_WALL, AIM: exit_AIM, THROW: exit_THROW}
-    do_state = {IDLE: do_IDLE, MOVE: do_MOVE, RELOAD: do_RELOAD, SIT: do_SIT,
-                MAKE_WALL: do_MAKE_WALL, AIM: do_AIM, THROW: do_THROW}
-    draw_state = {IDLE: draw_IDLE, MOVE: draw_MOVE, RELOAD: draw_RELOAD, SIT: draw_SIT,
-                  MAKE_WALL: draw_MAKE_WALL, AIM: draw_AIM, THROW: draw_THROW}
-
-
     def add_event(self, event):
         self.event_que.insert(0, event)
 
 
     def change_state(self, state):
         if self.cur_state != state:
-            self.exit_state[self.cur_state](self)
-            self.enter_state[state](self)
+            self.cur_state.exit(self)
             self.cur_state = state
+            self.cur_state.enter(self)
 
     def update(self):
-        self.do_state[self.cur_state](self)
+        self.cur_state.do(self)
         if len(self.event_que) > 0:
             event = self.event_que.pop()
             self.change_state(next_state_table[self.cur_state][event])
 
     def draw(self):
-        self.draw_state[self.cur_state](self)
+        self.cur_state.draw(self)
 
     def handle_event(self, event):
         if (event.type, event.key) in key_event_table:
@@ -248,11 +294,11 @@ class Main_Character:
                 if self.snow_stack == 0:
                     key_event = R_DOWN
                 else:
-                    self.aim_base_x, self.aim_base_y = event.x, 900 - event.y -1
+                    self.aim_base_x, self.aim_base_y = event.x, 900 - event.y - 1
             self.add_event(key_event)
 
-        elif event.type == SDL_MOUSEMOTION and self.cur_state == AIM:
-            self.aim_draw_x, self.aim_draw_y = event.x, 900 - event.y -1
+        elif event.type == SDL_MOUSEMOTION and self.cur_state == AimState:
+            self.aim_draw_x, self.aim_draw_y = event.x, 900 - event.y - 1
 
 
 

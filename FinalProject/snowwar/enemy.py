@@ -189,7 +189,7 @@ class Enemy:
 
     def throw_snow(self):
         distance = self.x - main_state.base_x - 200 + random.randint(-150, 100)
-        vx = 15
+        vx = random.randint(20, 25)
         t = distance/vx
         #vy = (28*math.sqrt(t**2 + 100) + 40*t)/50
         vy = t/5-(40/t)

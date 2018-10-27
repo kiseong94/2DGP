@@ -17,13 +17,14 @@ font = None
 base_x = 0
 cnt = 100
 snows = []
+snow_walls = []
 enemies = []
 
 
 def enter():
     global player
     global background
-    player = main_character.Main_Character()
+    player = main_character.Character()
     background = back_ground.Back_Ground()
 
 
@@ -78,6 +79,9 @@ def draw():
     player.draw()
     for s in snows:
         s.draw()
+
+    for wall in snow_walls:
+        wall.draw()
 
     for e in enemies:
         e.draw()
