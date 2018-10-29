@@ -31,3 +31,6 @@ class Back_Ground:
 
     def move_mountain(self, distance):
         self.mountain_x = (self.mountain_x + distance/3) % 1600
+
+    def update(self):
+        pass

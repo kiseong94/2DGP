@@ -2,7 +2,7 @@ from pico2d import *
 import main_state
 import random
 import snow
-import math
+import game_world
 
 IDLE, MOVE, AIM, THROW, HIT, DEAD, SIT, MAKE_WALL, RELOAD = range(9)
 
@@ -179,7 +179,7 @@ class Enemy:
             self.select_state()
 
         if self.cur_state != DEAD:
-            for s in main_state.snows:
+            for s in game_world.layer_objects(game_world.snow_layer):
                 if s.collision_object(self.x - 10, self.y + 25, self.x + 10, self.y - 25):
                     self.change_state(DEAD)
 
@@ -193,7 +193,7 @@ class Enemy:
         t = distance/vx
         #vy = (28*math.sqrt(t**2 + 100) + 40*t)/50
         vy = t/5-(40/t)
-        main_state.snows.insert(0, snow.Snow(self.x, self.y + 10, -vx, vy))
+        game_world.add_object(snow.Snow(self.x, self.y + 10, -vx, vy), game_world.snow_layer)
 
 
 
@@ -201,7 +201,7 @@ class Enemy:
 
 
 
-class Enemy_basic(Enemy):
+class Enemy_Basic(Enemy):
     def __init__(self):
         self.image = load_image('enemy_image.png')
         self.velocity = -2
@@ -226,3 +226,4 @@ class Enemy_basic(Enemy):
                 self.change_state(RELOAD)
         else:
             self.change_state(MOVE)
+

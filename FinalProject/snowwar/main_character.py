@@ -3,6 +3,7 @@ import main_state
 import snow
 import snow_wall
 import math
+import game_world
 
 A_DOWN, A_UP, S_DOWN, S_UP, W_DOWN, W_UP, D_DOWN, D_UP, R_DOWN, LEFT_BUTTON_DOWN, LEFT_BUTTON_UP, TIME_UP = range(12)
 
@@ -125,13 +126,13 @@ class MakeWallState:
         if character.frame == 15:
             find_wall = False
 
-            for sw in main_state.snow_walls:
+            for sw in game_world.layer_objects(game_world.snow_wall_layer):
                 if sw.check_existence(character.x + main_state.base_x, character.x + main_state.base_x + 60):
                     sw.strengthen_wall()
                     find_wall = True
 
             if find_wall == False:
-                main_state.snow_walls.insert(0, snow_wall.SnowWall(character.x + main_state.base_x + 20))
+                game_world.add_object(snow_wall.SnowWall(character.x + main_state.base_x + 20), game_world.snow_wall_layer)
 
             character.frame = 0
         else:
@@ -182,9 +183,9 @@ class ThrowState:
     @staticmethod
     def exit(character):
         character.snow_stack = 0
-        main_state.snows.insert(0, snow.Snow(200 + main_state.base_x, character.y + 15,
-                                             (character.aim_base_x - character.aim_draw_x) / 15 + 5,
-                                             (character.aim_base_y - character.aim_draw_y) / 15))
+        game_world.add_object(snow.Snow(200 + main_state.base_x, character.y + 15,
+                                        (character.aim_base_x - character.aim_draw_x) / 15 + 5,
+                                        (character.aim_base_y - character.aim_draw_y) / 15), game_world.snow_layer)
 
     @staticmethod
     def do(character):
