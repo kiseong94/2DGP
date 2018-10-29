@@ -1,7 +1,7 @@
 import game_framework
 from pico2d import *
 from ball import Ball
-
+import math
 import game_world
 
 # Boy Run Speed
@@ -18,11 +18,11 @@ RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
 TIME_PER_ACTION = 0.5
 ACTION_PER_TIME = 1.0
 FRAMES_PER_ACTION = 8
-DEGREE_PER_TIME = 720.0
+DEGREE_PER_TIME = 4*3.141592
 
 
 # Boy Event
-RIGHT_DOWN, LEFT_DOWN, RIGHT_UP, LEFT_UP, SLEEP_TIMER, SPACE = range(6)
+RIGHT_DOWN, LEFT_DOWN, RIGHT_UP, LEFT_UP, SLEEP_TIMER, SPACE, GHOST = range(7)
 
 key_event_table = {
     (SDL_KEYDOWN, SDLK_RIGHT): RIGHT_DOWN,
@@ -128,8 +128,7 @@ class SleepState:
 
 
         if boy.timer >= 3:
-            pass
-
+            boy.add_event(GHOST)
         else:
             if boy.dir == 1:
                 boy.image.clip_composite_draw(int(boy.frame) * 100, 300, 100, 100, 3.141592 / 2, '', boy.x - 25, boy.y - 25, 100, 100)
@@ -143,13 +142,41 @@ class SleepState:
                                               100, 100)
 
 
+class GhostState:
 
+    @staticmethod
+    def enter(boy, event):
+        boy.degree = 3.141592/2
+
+    @staticmethod
+    def exit(boy, event):
+        pass
+
+    @staticmethod
+    def do(boy):
+        boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
+        boy.degree += DEGREE_PER_TIME*game_framework.frame_time
+        boy.x = clamp(25, boy.x, 1600 - 25)
+
+    @staticmethod
+    def draw(boy):
+        if boy.dir == 1:
+            boy.image.clip_composite_draw(int(boy.frame) * 100, 300, 100, 100, 3.141592 / 2, '', boy.x - 25, boy.y - 25,
+                                          100, 100)
+            boy.image.clip_draw(int(boy.frame) * 100, 300, 100, 100, boy.x - 25 + 3 * PIXEL_PER_METER * math.sin(boy.degree),
+                                boy.y - 25 + 3 * PIXEL_PER_METER * math.cos(boy.degree))
+        else:
+            boy.image.clip_composite_draw(int(boy.frame) * 100, 200, 100, 100, -3.141592 / 2, '', boy.x + 25,
+                                          boy.y - 25, 100, 100)
+            boy.image.clip_draw(int(boy.frame) * 100, 200, 100, 100, boy.x + 25 - 3 * PIXEL_PER_METER * math.sin(boy.degree),
+                                boy.y - 25 + 3 * PIXEL_PER_METER * math.cos(boy.degree))
 
 
 next_state_table = {
     IdleState: {RIGHT_UP: RunState, LEFT_UP: RunState, RIGHT_DOWN: RunState, LEFT_DOWN: RunState, SLEEP_TIMER: SleepState, SPACE: IdleState},
     RunState: {RIGHT_UP: IdleState, LEFT_UP: IdleState, LEFT_DOWN: IdleState, RIGHT_DOWN: IdleState, SPACE: RunState},
-    SleepState: {LEFT_DOWN: RunState, RIGHT_DOWN: RunState, LEFT_UP: RunState, RIGHT_UP: RunState, SPACE: IdleState}
+    SleepState: {LEFT_DOWN: RunState, RIGHT_DOWN: RunState, LEFT_UP: RunState, RIGHT_UP: RunState, SPACE: IdleState, GHOST : GhostState},
+    GhostState: {LEFT_DOWN: RunState, RIGHT_DOWN: RunState, LEFT_UP: RunState, RIGHT_UP: RunState, SPACE: IdleState}
 }
 
 class Boy:
@@ -166,6 +193,8 @@ class Boy:
         self.cur_state = IdleState
         self.cur_state.enter(self, None)
         self.cur_time = 0
+        self.time = 0
+        self.degree=0
 
 
     def fire_ball(self):
@@ -178,6 +207,7 @@ class Boy:
 
     def update(self):
         self.cur_state.do(self)
+
         if len(self.event_que) > 0:
             event = self.event_que.pop()
             self.cur_state.exit(self, event)
