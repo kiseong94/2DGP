@@ -3,6 +3,7 @@ from pico2d import *
 from ball import Ball
 import math
 import game_world
+import random
 
 # Boy Run Speed
 # fill expressions correctly
@@ -113,9 +114,10 @@ class SleepState:
         boy.cur_time = get_time()
 
 
+
     @staticmethod
     def exit(boy, event):
-        pass
+        boy.image.opacify(1)
 
     @staticmethod
     def do(boy):
@@ -126,16 +128,18 @@ class SleepState:
     @staticmethod
     def draw(boy):
 
-
+        boy.image.opacify(1)
         if boy.timer >= 3:
             boy.add_event(GHOST)
         else:
             if boy.dir == 1:
                 boy.image.clip_composite_draw(int(boy.frame) * 100, 300, 100, 100, 3.141592 / 2, '', boy.x - 25, boy.y - 25, 100, 100)
+                boy.image.opacify(0.5)
                 boy.image.clip_composite_draw(int(boy.frame) * 100, 300, 100, 100, 3.141592 / 2 - 3.141592 /6 * boy.timer, '', boy.x - 25, boy.y - 25 + boy.timer * PIXEL_PER_METER,
                                           100, 100 )
             else:
                 boy.image.clip_composite_draw(int(boy.frame) * 100, 200, 100, 100, -3.141592 / 2, '', boy.x + 25, boy.y - 25, 100, 100)
+                boy.image.opacify(0.5)
                 boy.image.clip_composite_draw(int(boy.frame) * 100, 200, 100, 100,
                                               -3.141592 / 2 + 3.141592 / 6 * boy.timer, '', boy.x + 25,
                                               boy.y - 25 + boy.timer * PIXEL_PER_METER,
@@ -150,7 +154,7 @@ class GhostState:
 
     @staticmethod
     def exit(boy, event):
-        pass
+        boy.image.opacify(1)
 
     @staticmethod
     def do(boy):
@@ -160,14 +164,17 @@ class GhostState:
 
     @staticmethod
     def draw(boy):
+        boy.image.opacify(1)
         if boy.dir == 1:
             boy.image.clip_composite_draw(int(boy.frame) * 100, 300, 100, 100, 3.141592 / 2, '', boy.x - 25, boy.y - 25,
                                           100, 100)
+            boy.image.opacify(random.randint(0, 100)/100)
             boy.image.clip_draw(int(boy.frame) * 100, 300, 100, 100, boy.x - 25 + 3 * PIXEL_PER_METER * math.sin(boy.degree),
                                 boy.y - 25 + 3 * PIXEL_PER_METER * math.cos(boy.degree))
         else:
             boy.image.clip_composite_draw(int(boy.frame) * 100, 200, 100, 100, -3.141592 / 2, '', boy.x + 25,
                                           boy.y - 25, 100, 100)
+            boy.image.opacify(random.randint(0, 100) / 100)
             boy.image.clip_draw(int(boy.frame) * 100, 200, 100, 100, boy.x + 25 - 3 * PIXEL_PER_METER * math.sin(boy.degree),
                                 boy.y - 25 + 3 * PIXEL_PER_METER * math.cos(boy.degree))
 
