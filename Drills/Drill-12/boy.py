@@ -49,7 +49,8 @@ class IdleState:
         elif event == LEFT_UP:
             boy.velocity += RUN_SPEED_PPS
 
-        boy.timer = get_time()
+        boy.timer = 0
+        boy.cur_time = get_time()
 
     @staticmethod
     def exit(boy, event):
@@ -60,8 +61,10 @@ class IdleState:
     @staticmethod
     def do(boy):
         boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
+        boy.timer += get_time() - boy.cur_time
+        boy.cur_time = get_time()
 
-        if get_time() - boy.timer >= 10:
+        if boy.timer >= 10:
             boy.add_event(SLEEP_TIMER)
 
     @staticmethod
