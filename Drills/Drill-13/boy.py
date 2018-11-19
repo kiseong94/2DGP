@@ -71,7 +71,7 @@ class WalkingState:
         boy.y += boy.y_velocity * game_framework.frame_time
 
         boy.x = clamp(7 * PIXEL_PER_METER / boy.bg.h * boy.y, boy.x, boy.bg.w - 7 * PIXEL_PER_METER / boy.bg.h * boy.y)
-        boy.y = clamp(0, boy.y, boy.bg.h)
+        boy.y = clamp(3 * PIXEL_PER_METER, boy.y, boy.bg.h)
 
 
 
