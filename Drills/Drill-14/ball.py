@@ -5,18 +5,22 @@ import game_framework
 
 class Ball:
     image = None
+    background = None
 
-    def __init__(self):
+    def __init__(self, bg):
         if Ball.image == None:
             Ball.image = load_image('ball21x21.png')
+        if Ball.background == None:
+            Ball.background = bg
         self.x, self.y, self.fall_speed = random.randint(0, 1600-1), 60, 0
 
     def get_bb(self):
         return self.x - 10, self.y - 10, self.x + 10, self.y + 10
 
     def draw(self):
-        self.image.draw(self.x, self.y)
-        draw_rectangle(*self.get_bb())
+        window_x, window_y = self.x - self.background.window_left, self.y - self.background.window_bottom
+        self.image.draw(window_x, window_y)
+        #draw_rectangle(*self.get_bb())
 
     def update(self):
         self.y -= self.fall_speed * game_framework.frame_time

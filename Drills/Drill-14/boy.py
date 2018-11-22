@@ -126,6 +126,9 @@ class Boy:
     def get_bb(self):
         return self.x - 50, self.y - 50, self.x + 50, self.y + 50
 
+    def eat(self, ball):
+        pass
+
 
     def set_background(self, bg):
         self.bg = bg
