@@ -153,7 +153,7 @@ class Boy:
     def draw(self):
         cx, cy = self.x - self.bg.window_left, self.y - self.bg.window_bottom
         self.cur_state.draw(self)
-        self.font.draw(cx - 60, cy + 50, '(%5d, %5d)' % (self.x, self.y), (255, 255, 0))
+        self.font.draw(cx - 60, cy + 50, 'Ball Number : %d' % self.num_ball, (255, 255, 0))
 
     def handle_event(self, event):
         if (event.type, event.key) in key_event_table:
