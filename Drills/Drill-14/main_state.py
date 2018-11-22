@@ -7,7 +7,7 @@ import game_framework
 import game_world
 
 from boy import Boy
-from grass import Grass
+from background import FixedBackground as Background
 from ball import Ball
 
 name = "MainState"
@@ -37,9 +37,12 @@ def enter():
     boy = Boy()
     game_world.add_object(boy, 1)
 
-    global grass
-    grass = Grass()
-    game_world.add_object(grass, 0)
+    global background
+    background = Background()
+    game_world.add_object(background, 0)
+
+    background.set_center_object(boy)
+    boy.set_background(background)
 
     global balls
     balls = [Ball() for i in range(10)]
