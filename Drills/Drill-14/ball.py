@@ -12,7 +12,7 @@ class Ball:
             Ball.image = load_image('ball21x21.png')
         if Ball.background == None:
             Ball.background = bg
-        self.x, self.y, self.fall_speed = random.randint(0, 1600-1), 60, 0
+        self.x, self.y, self.fall_speed = random.randint(100, 1700), random.randint(100, 1000), 0
 
     def get_bb(self):
         return self.x - 10, self.y - 10, self.x + 10, self.y + 10
